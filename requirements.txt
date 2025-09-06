@@ -1,0 +1,4 @@
+# Add this to your requirements.txt if not present:
+# beautifulsoup4
+# requests
+# lxml
