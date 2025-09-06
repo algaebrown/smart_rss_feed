@@ -72,3 +72,29 @@
 - [ ] Visualize clusters and summaries in Streamlit dashboard (scatterplot, cluster view)
 - [ ] Implement trend detection and visualization (line charts, topic changes)
 - [ ] Write tests for visualization and trend logic
+
+## 1. Application Startup
+- [ ] Load newsletters from the feed (on app start, no button required)
+- [ ] Store newsletters in session state
+
+## 2. Embedding & t-SNE
+- [ ] Compute embeddings for all loaded newsletters
+- [ ] Compute t-SNE coordinates for all newsletters
+- [ ] Store embeddings and t-SNE in each newsletter object
+
+## 3. Filtering Articles
+- [ ] Date filter: update `filters['date_filter']` for each newsletter
+- [ ] AI filter: user provides prompt, result stored in `filters[ai_filter_key]`
+- [ ] Keyword filter: user provides keyword, update `filters['f{keyword}']` for exact title match
+
+## 4. Article Display
+- [ ] User can select one or more filters to show articles (AND/OR logic as needed)
+- [ ] Display filtered articles with all details
+
+## 5. Visualization
+- [ ] User can select a filter to visualize on t-SNE plot (color by filter)
+- [ ] User can select a filter to visualize on dendrogram
+
+## 6. Export
+- [ ] User can select articles from the filtered list
+- [ ] Export selected articles as CSV (all fields in Newsletter class)

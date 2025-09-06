@@ -358,6 +358,33 @@ Implement trend detection and visualization using line charts and topic changes.
 ```
 
 ---
+# Smart Newsletter Dashboard: Spec
+
+## Data Model
+- **Newsletter class**: title, content, publication_date, url, embedding, tsne, filters (dict)
+
+## Flow
+1. **Startup**: Load newsletters from feed, store in session state
+2. **Embedding**: Compute embeddings and t-SNE for all newsletters
+3. **Filtering**:
+    - Date filter: updates `filters['date_filter']`
+    - AI filter: user prompt, result in `filters[ai_filter_key]`
+    - Keyword filter: user keyword, updates `filters['f{keyword}']` (exact title match)
+4. **Display**: User selects filters to view articles (multi-select, AND/OR logic)
+5. **Visualization**: User selects a filter to color t-SNE or dendrogram
+6. **Export**: User selects articles and exports as CSV (all Newsletter fields)
+
+## UI/UX
+- Sidebar: date filter, AI filter, keyword filter, filter selection, export button
+- Main: t-SNE plot, dendrogram, filtered articles list (with selection checkboxes)
+- All filter actions update the `filters` dict in each newsletter
+- All visualizations and exports reflect current filter selection
+
+## Notes
+- All state is session-persistent
+- No redundant ingestion/embedding
+- Modular, testable functions for each step
+- Clear feedback to user for each action
 
 ## Review
 
