@@ -12,3 +12,13 @@ A Streamlit application for ingesting, clustering, summarizing, and exploring ne
 - Visualize clusters and trends over time
 - Support filtering, exporting, and user management
 - Ensure robust error handling and thorough testing
+
+# how to dependency
+```
+conda activate smart_rss 
+conda install python=3.11
+pip install uv
+uv venv .venv --python 3.11
+source .venv/bin/activate
+uv pip install -r requirements.txt
+```

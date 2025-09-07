@@ -1,4 +1,21 @@
-# Add this to your requirements.txt if not present:
-# beautifulsoup4
-# requests
-# lxml
+streamlit==1.43.2
+pandas==2.2.3
+scikit-learn==1.6.1
+matplotlib
+plotly==5.24.1
+newspaper3k==0.2.8
+duckduckgo-search==8.1.1
+beautifulsoup4
+requests
+lxml
+openai
+anthropic
+vertexai
+langchain==0.3.27
+langchain-community==0.3.29
+langchain-core==0.3.75
+langchain-text-splitters==0.3.11
+sentence-transformers==3.4.1
+torch==2.6.0
+feedparser==6.0.11
+python-dateutil
