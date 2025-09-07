@@ -1,6 +1,7 @@
 from typing import List, Optional
 from src.subscription import Subscription
 
+
 class SubscriptionStore:
     def __init__(self):
         self._subscriptions: List[Subscription] = []
@@ -14,7 +15,9 @@ class SubscriptionStore:
                 return s
         return None
 
-    def update(self, user_email: str, newsletter_title: str, new_subscription: Subscription) -> bool:
+    def update(
+        self, user_email: str, newsletter_title: str, new_subscription: Subscription
+    ) -> bool:
         for i, s in enumerate(self._subscriptions):
             if s.user.email == user_email and s.newsletter.title == newsletter_title:
                 self._subscriptions[i] = new_subscription

@@ -8,15 +8,18 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
 
 def strip_html_tags(text: str) -> str:
-    return re.sub(r'<[^>]+>', '', text)
+    return re.sub(r"<[^>]+>", "", text)
+
 
 def clean_title(text: str) -> str:
     # Remove HTML tags and unwanted prefixes
     text = strip_html_tags(text)
-    return text.replace('STAT+:', '').strip()
+    return text.replace("STAT+:", "").strip()
+
 
 def get_publication_date_from_url(url: str) -> str:
     """
@@ -27,22 +30,23 @@ def get_publication_date_from_url(url: str) -> str:
         resp = requests.get(url, timeout=5)
         if resp.status_code != 200:
             return None
-        soup = BeautifulSoup(resp.text, 'lxml')
+        soup = BeautifulSoup(resp.text, "lxml")
         # Try <meta property="article:published_time">
-        meta = soup.find('meta', attrs={'property': 'article:published_time'})
-        if meta and meta.get('content'):
-            return meta['content']
+        meta = soup.find("meta", attrs={"property": "article:published_time"})
+        if meta and meta.get("content"):
+            return meta["content"]
         # Try <meta name="pubdate">
-        meta = soup.find('meta', attrs={'name': 'pubdate'})
-        if meta and meta.get('content'):
-            return meta['content']
+        meta = soup.find("meta", attrs={"name": "pubdate"})
+        if meta and meta.get("content"):
+            return meta["content"]
         # Try <meta name="date">
-        meta = soup.find('meta', attrs={'name': 'date'})
-        if meta and meta.get('content'):
-            return meta['content']
+        meta = soup.find("meta", attrs={"name": "date"})
+        if meta and meta.get("content"):
+            return meta["content"]
     except Exception as e:
         logging.warning(f"Failed to fetch date from {url}: {e}")
     return None
+
 
 def ingest_newsletters_from_feed(feed_path: str) -> List[Newsletter]:
     logging.info(f"Parsing feed: {feed_path}")
@@ -60,30 +64,35 @@ def ingest_newsletters_from_feed(feed_path: str) -> List[Newsletter]:
         # Try to get date from the web page if possible
         web_date = get_publication_date_from_url(url) if url else None
         try:
-            publication_date = parser.parse(web_date) if web_date else (parser.parse(date_str) if date_str else datetime.now())
+            publication_date = (
+                parser.parse(web_date)
+                if web_date
+                else (parser.parse(date_str) if date_str else datetime.now())
+            )
         except Exception as e:
             logging.warning(f"Failed to parse date for entry '{title}': {e}")
             publication_date = datetime.now()
-        newsletters.append(Newsletter(
-            title=title,
-            content=content,
-            publication_date=publication_date,
-            url=url
-        ))
+        newsletters.append(
+            Newsletter(
+                title=title, content=content, publication_date=publication_date, url=url
+            )
+        )
         logging.info(f"Added newsletter: {title} | {publication_date} | {url}")
     logging.info(f"Total newsletters ingested: {len(newsletters)}")
     return newsletters
 
+
 def demo_ingest():
     logging.info("Starting demo ingestion...")
-    newsletters = ingest_newsletters_from_feed('data/master_feed.xml')
+    newsletters = ingest_newsletters_from_feed("data/master_feed.xml")
     for n in newsletters:
         print(f"Title: {n.title}")
         print(f"Content: {n.content}")
         print(f"Publication Date: {n.publication_date}")
         print(f"URL: {n.url}")
-        print('-' * 40)
+        print("-" * 40)
     logging.info("Demo ingestion complete.")
+
 
 if __name__ == "__main__":
     demo_ingest()

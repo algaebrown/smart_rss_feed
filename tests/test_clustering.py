@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from src.clustering import tsne_cluster
 
+
 class TestTSNEClustering(unittest.TestCase):
     def test_tsne_cluster_shape(self):
         # Create dummy embeddings
@@ -10,6 +11,7 @@ class TestTSNEClustering(unittest.TestCase):
         self.assertIsInstance(X_embedded, np.ndarray)
         self.assertEqual(X_embedded.shape[1], 2)
         self.assertEqual(X_embedded.shape[0], len(embeddings))
+
 
 if __name__ == "__main__":
     unittest.main()

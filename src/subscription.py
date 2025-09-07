@@ -3,6 +3,7 @@ from datetime import datetime
 from src.user import User
 from src.newsletter import Newsletter
 
+
 @dataclass
 class Subscription:
     user: User

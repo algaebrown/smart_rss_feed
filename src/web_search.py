@@ -4,13 +4,14 @@ def fetch_article_full_text(url: str) -> str:
     Returns the article text, or an error message if fetching/parsing fails.
     Tolerates network errors, 403 forbidden, and parsing exceptions.
     """
-    
+
     from newspaper import Article
-    
+
     article = Article(url)
     article.download()
     article.parse()
     return article.text.strip() if article.text else "No article text found."
+
 
 def duckduckgo_search_similar_news(query: str, max_results: int = 10) -> list:
     """
@@ -18,28 +19,33 @@ def duckduckgo_search_similar_news(query: str, max_results: int = 10) -> list:
     Returns a list of dicts with 'title', 'url', and 'snippet'.
     Requires: pip install duckduckgo-search
     """
-    
+
     from ddgs import DDGS
+
     results = []
 
-    search_term = f'{query} news press release'
+    search_term = f"{query} news press release"
     try:
         with DDGS() as ddgs:
             for r in ddgs.text(search_term, max_results=max_results):
-                results.append({
-                    "title": r.get("title", ""),
-                    "url": r.get("href", ""),
-                    "snippet": r.get("body", "")
-                })
+                results.append(
+                    {
+                        "title": r.get("title", ""),
+                        "url": r.get("href", ""),
+                        "snippet": r.get("body", ""),
+                    }
+                )
     except Exception as e:
-        results.append({"title": "DuckDuckGo search error", "url": "", "snippet": str(e)})
+        results.append(
+            {"title": "DuckDuckGo search error", "url": "", "snippet": str(e)}
+        )
 
     # filter for PR newswire
     for r in results:
-        if 'www.prnewswire.com' in r['url']:
-            full_text = fetch_article_full_text(r['url'])
+        if "www.prnewswire.com" in r["url"]:
+            full_text = fetch_article_full_text(r["url"])
             return full_text
-    
+
     # if no PR newswire, try to scrape 3 other news articles
     success = 0
     full_text = ""
@@ -47,13 +53,13 @@ def duckduckgo_search_similar_news(query: str, max_results: int = 10) -> list:
         if success >= 3:
             break
         try:
-            full_text += fetch_article_full_text(r['url'])
+            full_text += fetch_article_full_text(r["url"])
             success += 1
         except Exception:
             pass
-    
 
     return full_text
+
 
 def find_full_text(url, title):
     """
@@ -74,6 +80,7 @@ def find_full_text(url, title):
             return search_results
         else:
             return "No similar articles found."
+
 
 if __name__ == "__main__":
     # Example URL (may trigger 403 or work depending on site)

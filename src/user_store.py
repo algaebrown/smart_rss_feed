@@ -1,6 +1,7 @@
 from typing import List, Optional
 from src.user import User
 
+
 class UserStore:
     def __init__(self):
         self._users: List[User] = []

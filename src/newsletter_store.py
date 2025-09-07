@@ -1,6 +1,7 @@
 from typing import List, Optional
 from src.newsletter import Newsletter
 
+
 class NewsletterStore:
     def __init__(self):
         self._newsletters: List[Newsletter] = []
