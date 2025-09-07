@@ -1,7 +1,7 @@
 import unittest
 import os
 from datetime import datetime
-from src.ingest import ingest_newsletters_from_feed, strip_html_tags
+from src.ingest import ingest_newsletters_from_feed, strip_html_tags, clean_title
 from src.newsletter import Newsletter
 
 
@@ -43,11 +43,24 @@ class TestIngestNewsletters(unittest.TestCase):
 
     def test_strip_html_tags(self):
         html_title = '<a href="/cro/cro-veeda-picks-mangos-generative-ai-platform-clinical-trials" hreflang="en">CRO Veeda picks Mango’s generative AI platform for clinical trials</a>'
-        clean_title = strip_html_tags(html_title)
+        clean_title_result = strip_html_tags(html_title)
         self.assertEqual(
-            clean_title,
+            clean_title_result,
             "CRO Veeda picks Mango’s generative AI platform for clinical trials",
         )
+        # Additional cases
+        self.assertEqual(strip_html_tags("<b>Bold</b> text"), "Bold text")
+        self.assertEqual(strip_html_tags("No tags here"), "No tags here")
+        self.assertEqual(strip_html_tags("<div>foo</div><span>bar</span>"), "foobar")
+        self.assertEqual(strip_html_tags("<a href='x'>link</a>"), "link")
+        self.assertEqual(strip_html_tags(""), "")
+
+    def test_clean_title(self):
+        self.assertEqual(clean_title("STAT+: <b>AI News</b>"), "AI News")
+        self.assertEqual(clean_title("STAT+:Hello"), "Hello")
+        self.assertEqual(clean_title("<i>STAT+:Test</i>"), "Test")
+        self.assertEqual(clean_title("NoPrefix Title"), "NoPrefix Title")
+        self.assertEqual(clean_title(""), "")
 
 
 if __name__ == "__main__":

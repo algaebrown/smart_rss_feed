@@ -7,7 +7,7 @@ newspaper3k==0.2.8
 ddgs==9.5.5
 beautifulsoup4
 requests
-lxml
+lxml[html_clean]
 openai
 anthropic
 langchain==0.3.27
@@ -21,3 +21,5 @@ python-dateutil
 google-genai==1.33.0
 pydantic==2.11.7
 watchdog
+black
+pre-commit

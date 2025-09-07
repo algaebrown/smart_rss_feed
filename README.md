@@ -22,3 +22,37 @@ uv venv .venv --python 3.11
 source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
+
+# Pre-commit hooks
+```
+# install pre-commit hooks
+pre-commit install
+# run black
+pre-commit run black --all-files
+```
+
+# Running Tests
+To run all unittests:
+```
+python -m unittest discover tests
+```
+Or to run a specific test file:
+```
+python -m unittest tests/test_grouping.py
+```
+
+# Checking Test Coverage
+To check test coverage, first install coverage if not already installed:
+```
+uv pip install coverage
+```
+Then run:
+```
+coverage run -m unittest discover tests
+coverage report -m
+```
+For an HTML report:
+```
+coverage html
+# Open htmlcov/index.html in your browser
+```
