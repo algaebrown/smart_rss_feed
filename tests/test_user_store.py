@@ -1,6 +1,6 @@
 import unittest
-from src.user import User
-from src.user_store import UserStore
+from user import User
+from user_store import UserStore
 
 
 class TestUserStore(unittest.TestCase):

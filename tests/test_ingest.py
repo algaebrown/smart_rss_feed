@@ -1,8 +1,8 @@
 import unittest
 import os
 from datetime import datetime
-from src.ingest import ingest_newsletters_from_feed, strip_html_tags, clean_title
-from src.newsletter import Newsletter
+from ingest import ingest_newsletters_from_feed, strip_html_tags, clean_title
+from newsletter import Newsletter
 
 
 class TestIngestNewsletters(unittest.TestCase):

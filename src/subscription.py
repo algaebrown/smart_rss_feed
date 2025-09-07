@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from src.user import User
-from src.newsletter import Newsletter
+from user import User
+from newsletter import Newsletter
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from src.newsletter import Newsletter
+from newsletter import Newsletter
 from typing import List
 
 

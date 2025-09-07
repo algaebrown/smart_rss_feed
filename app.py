@@ -1,9 +1,9 @@
 import streamlit as st
-from src.ingest import ingest_newsletters_from_feed
-from src.visualization import compute_and_assign_embeddings_tsne, tsne_visualization
-from src.llm_tagging import filter_newsletters_with_ai
-from src.grouping import render_similar_articles
-from src.web_search import find_full_text
+from ingest import ingest_newsletters_from_feed
+from visualization import compute_and_assign_embeddings_tsne, tsne_visualization
+from llm_tagging import filter_newsletters_with_ai
+from grouping import render_similar_articles
+from web_search import find_full_text
 import pandas as pd
 import datetime
 import logging

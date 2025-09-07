@@ -1,5 +1,5 @@
 from typing import List, Optional
-from src.subscription import Subscription
+from subscription import Subscription
 
 
 class SubscriptionStore:

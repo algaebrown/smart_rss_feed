@@ -1,5 +1,5 @@
 from typing import List, Optional
-from src.newsletter import Newsletter
+from newsletter import Newsletter
 
 
 class NewsletterStore:

@@ -1,5 +1,5 @@
 import unittest
-from src.grouping import group_by_cosine_similarity, render_similar_articles
+from grouping import group_by_cosine_similarity, render_similar_articles
 import numpy as np
 
 

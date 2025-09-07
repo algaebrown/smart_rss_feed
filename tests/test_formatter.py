@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
-from src.newsletter import Newsletter
-from src.formatter import format_newsletter_for_email, format_multiple_newsletters
+from newsletter import Newsletter
+from formatter import format_newsletter_for_email, format_multiple_newsletters
 
 
 class TestFormatter(unittest.TestCase):

@@ -1,8 +1,8 @@
 import unittest
 from datetime import datetime
-from src.user import User
-from src.newsletter import Newsletter
-from src.subscription import Subscription
+from user import User
+from newsletter import Newsletter
+from subscription import Subscription
 
 
 class TestSubscription(unittest.TestCase):

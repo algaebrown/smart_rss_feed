@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime
-from src.newsletter import Newsletter
+from newsletter import Newsletter
 
 
 class TestNewsletter(unittest.TestCase):

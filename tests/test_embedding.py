@@ -1,5 +1,5 @@
 import unittest
-from src.embedding import compute_embeddings
+from embedding import compute_embeddings
 
 
 class TestEmbedding(unittest.TestCase):

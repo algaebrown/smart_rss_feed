@@ -1,6 +1,6 @@
-from src.embedding import compute_embeddings
-from src.clustering import tsne_cluster
-from src.grouping import group_by_cosine_similarity, plotly_cosine_dendrogram
+from embedding import compute_embeddings
+from clustering import tsne_cluster
+from grouping import group_by_cosine_similarity, plotly_cosine_dendrogram
 import pandas as pd
 import plotly.express as px
 import streamlit as st

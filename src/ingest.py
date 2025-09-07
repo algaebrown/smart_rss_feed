@@ -1,7 +1,7 @@
 import feedparser
 from datetime import datetime
 from typing import List
-from src.newsletter import Newsletter
+from newsletter import Newsletter
 from dateutil import parser
 import logging
 import re

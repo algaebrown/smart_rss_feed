@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from src.clustering import tsne_cluster
+from clustering import tsne_cluster
 
 
 class TestTSNEClustering(unittest.TestCase):

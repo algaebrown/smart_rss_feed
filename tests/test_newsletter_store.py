@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
-from src.newsletter import Newsletter
-from src.newsletter_store import NewsletterStore
+from newsletter import Newsletter
+from newsletter_store import NewsletterStore
 
 
 class TestNewsletterStore(unittest.TestCase):
