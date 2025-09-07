@@ -35,3 +35,16 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
+[tool.uv.sources]
+smart-rss = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "smart-rss",
+]

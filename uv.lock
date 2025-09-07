@@ -2804,6 +2804,11 @@ dependencies = [
     { name = "watchdog" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "smart-rss" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = ">=0.66.0" },
@@ -2833,6 +2838,9 @@ requires-dist = [
     { name = "torch", specifier = "==2.6.0" },
     { name = "watchdog", specifier = ">=6.0.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "smart-rss", virtual = "." }]
 
 [[package]]
 name = "smmap"
