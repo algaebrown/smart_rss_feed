@@ -57,11 +57,14 @@ if keyword:
 
 # --- AI Filter ---
 st.sidebar.header("AI Filtering")
-ai_provider = st.sidebar.selectbox("Choose AI Provider", ["OpenAI", "Claude", "Vertex AI", "Ollama (local)"])
+ai_provider = st.sidebar.selectbox(
+    "Choose AI Provider",
+    ["OpenAI", "Claude", "Google", "Ollama (local)"],
+    index=2  # Default to 'Google'
+)
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password") if ai_provider == "OpenAI" else None
 claude_api_key = st.sidebar.text_input("Claude API Key", type="password") if ai_provider == "Claude" else None
-vertex_project = st.sidebar.text_input("Vertex Project ID") if ai_provider == "Vertex AI" else None
-vertex_location = st.sidebar.text_input("Vertex Location") if ai_provider == "Vertex AI" else None
+gemini_api_key = st.sidebar.text_input("Gemini API Key", type="password") if ai_provider == "Google" else None
 ollama_url = st.sidebar.text_input("Ollama URL", value="http://localhost:11434/api/generate") if ai_provider == "Ollama (local)" else None
 user_prompt = st.sidebar.text_area("AI Filter Prompt", help="e.g. Show me newsletters about AI published last week")
 ai_filter_key = st.sidebar.text_input("AI Filter Name", value="AI_filter", help="Name for this AI filter (e.g. 'AI_filter', 'topic_filter', etc.)")
@@ -71,8 +74,7 @@ if user_prompt and ai_filter_key and st.sidebar.button("Apply AI Filter"):
         {
             "openai": openai_api_key,
             "claude": claude_api_key,
-            "vertex_project": vertex_project,
-            "vertex_location": vertex_location
+            "gemini": gemini_api_key
         },
         ollama_url=ollama_url,
         filter_key=ai_filter_key

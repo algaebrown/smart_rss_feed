@@ -1,6 +1,33 @@
 import logging
 import json
 import streamlit as st
+from google import genai
+from pydantic import BaseModel, ValidationError, Field
+import re
+from time import sleep
+def clean_json_response(text: str) -> str:
+    ''' cleans markdown encasing around json '''
+    # Remove code fences like ```json ... ```
+    cleaned = re.sub(r"^```(?:json)?\n?", "", text.strip())
+    cleaned = re.sub(r"```$", "", cleaned.strip())
+    return cleaned.strip()
+class NewsletterResult(BaseModel):
+    match: bool
+    confidence: float = Field(ge=0.0, le=1.0)  # confidence between 0 and 1
+    reason: str | None = None  # optional
+
+def get_google_genai_client(api_key):
+    """
+    Initialize and return a Google Gemini API client.
+    api_key: str, your Google Gemini API key
+    Returns: genai.Client instance
+    """
+    client = genai.Client(
+        api_key=api_key,
+    )
+    return client
+
+
 def ai_newsletter_filter(context, user_prompt, ai_provider, api_keys, ollama_url=None):
     """
     Returns a dict: {"match": bool, "confidence": float, "reason": str}
@@ -26,6 +53,7 @@ def ai_newsletter_filter(context, user_prompt, ai_provider, api_keys, ollama_url
         f"Newsletter Content:\n{context}\n"
         f"{output_prompt}"
     )
+    logging.info(f"AI Provider: {ai_provider}, Prompt: {full_prompt}")
     if ai_provider == "OpenAI" and api_keys.get("openai"):
         try:
             import openai
@@ -67,22 +95,24 @@ def ai_newsletter_filter(context, user_prompt, ai_provider, api_keys, ollama_url
         except Exception as e:
             logging.exception("Claude error during newsletter filter:")
             return {"match": False, "confidence": 0.0, "reason": f"Claude error: {e}"}
-    elif ai_provider == "Vertex AI" and api_keys.get("vertex_project") and api_keys.get("vertex_location"):
+    elif ai_provider == "Google" and api_keys.get("gemini"):
         try:
-            from vertexai.language_models import ChatModel
-            chat_model = ChatModel.from_pretrained("chat-bison")
-            chat = chat_model.start_chat()
-            response = chat.send_message(full_prompt)
-            result = json.loads(response.text)
-            if "confidence" in result:
-                try:
-                    result["confidence"] = float(result["confidence"])
-                except Exception:
-                    result["confidence"] = 0.0
-            return result
+            # Gemma does not have a json output mode, so we need to clean the response
+            client = get_google_genai_client(api_keys.get("gemini"))
+            response = client.models.generate_content(
+                    model="gemma-3-12b-it",
+                    contents=full_prompt
+            )
+            logging.info(f"Google response: {response.text}, prompt: {full_prompt}")
+            raw_result = json.loads(clean_json_response(response.text))
+            result = NewsletterResult(**raw_result)
+            # sleep 2s because of rate limits
+            sleep(2)
+            return dict(result)
         except Exception as e:
-            logging.exception("Vertex AI error during newsletter filter:")
-            return {"match": False, "confidence": 0.0, "reason": f"Vertex AI error: {e}"}
+            logging.exception("Google gemma-3-12b-it error during newsletter filter:")
+            logging.info(f"Response text: {response.text}")
+            return {"match": False, "confidence": 0.0, "reason": f"Google gemma-3-12b-it error: {e}", "response": response.text}
     elif ai_provider == "Ollama (local)" and ollama_url:
         try:
             from langchain_community.chat_models import ChatOllama
@@ -91,13 +121,9 @@ def ai_newsletter_filter(context, user_prompt, ai_provider, api_keys, ollama_url
             content = response.content if hasattr(response, 'content') else response
 
             logging.info(f"Ollama response: {content}, prompt: {full_prompt}")
-            result = json.loads(content)
-            if "confidence" in result:
-                try:
-                    result["confidence"] = float(result["confidence"])
-                except Exception:
-                    result["confidence"] = 0.0
-            return result
+            raw_result = json.loads(content)
+            result = NewsletterResult(**raw_result)
+            return dict(result)
         except Exception as e:
             logging.exception("Ollama error during newsletter filter:")
             return {"match": False, "confidence": 0.0, "reason": f"Ollama error: {e}"}
@@ -114,16 +140,13 @@ def filter_newsletters_with_ai(newsletters, user_prompt, ai_provider, api_keys, 
         if pass_date and n.filters and n.filters.get('date_filter') is True:
             context = f"Title: {n.title}\nContent: {n.content}\n" 
             result = ai_newsletter_filter(context, user_prompt, ai_provider, api_keys, ollama_url)
-            # transient output show result
-            st.write(f"LLM result: {n.title}. {result}")
             # save result in newsletter filters
             n.filters[filter_key] = result
             
             if result.get("match"):
-                st.write(f"LLM result {n.title}: {result}")
                 st.write(f"Matched: {n.title} (Confidence: {result.get('confidence', 0.0):.2f}) - {result.get('reason', '')}")
             elif result.get("match") is None:
-                st.write(f"LLM returns weird result for {n.title}: {result}")
+                logging.warning(f"AI filter returned None match for newsletter '{n.title}': {result}")
             progress_bar.progress((idx + 1) / total, text=f"Filtering newsletters with AI... ({idx + 1}/{total})")
         else:
             n.filters[filter_key] = {"match": None, "confidence": None, "reason": "Filtered out by date."}

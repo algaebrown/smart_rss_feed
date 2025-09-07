@@ -10,7 +10,6 @@ requests
 lxml
 openai
 anthropic
-vertexai
 langchain==0.3.27
 langchain-community==0.3.29
 langchain-core==0.3.75
@@ -19,3 +18,6 @@ sentence-transformers==3.4.1
 torch==2.6.0
 feedparser==6.0.11
 python-dateutil
+google-genai==1.33.0
+pydantic==2.11.7
+watchdog
