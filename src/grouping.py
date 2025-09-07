@@ -54,3 +54,25 @@ def plotly_cosine_dendrogram(embeddings, titles):
     fig = ff.create_dendrogram(dist_matrix, labels=titles, orientation='top', color_threshold=None)
     fig.update_layout(width=900, height=600, title='Cosine Similarity Dendrogram (Interactive)')
     return fig
+
+def render_similar_articles(selected_article, all_articles, threshold=0.7):
+    """
+    Given a selected article and a list of all articles (with .embedding),
+    return a list of (article, similarity) tuples for articles with cosine similarity > threshold.
+    The selected_article itself is excluded from the results.
+    """
+    import numpy as np
+    from sklearn.metrics.pairwise import cosine_similarity
+    if not hasattr(selected_article, 'embedding') or selected_article.embedding is None:
+        return []
+    selected_emb = np.array(selected_article.embedding).reshape(1, -1)
+    results = {}
+    for art in all_articles:
+        if art is selected_article or not hasattr(art, 'embedding') or art.embedding is None or art.user_selected is True:
+            # Skip articles already selected by user
+            continue
+        sim = cosine_similarity(selected_emb, np.array(art.embedding).reshape(1, -1))[0, 0]
+        if sim > threshold:
+            results[art.title] = (art, sim)
+    # Sort by similarity descending
+    return results

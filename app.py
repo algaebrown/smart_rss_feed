@@ -1,26 +1,9 @@
-# --- Show Articles by Tag Function ---
-def show_articles_by_tag(newsletters, tag_key):
-    """
-    Display all articles that match a specific tag (AI filter key).
-    """
-    st.subheader(f"Articles matching tag: {tag_key}")
-    count = 0
-    for n in newsletters:
-        if hasattr(n, 'filters') and n.filters and tag_key in n.filters:
-            val = n.filters[tag_key]
-            match = val.get('match') if isinstance(val, dict) else val
-            if match is True:
-                with st.expander(n.title):
-                    st.markdown(f"**Date:** {n.publication_date.strftime('%A, %d %B %Y %H:%M')}")
-                    st.markdown(f"**URL:** [{n.url}]({n.url})" if n.url else "**URL:** N/A")
-                    st.markdown(f"**Content:**\n\n{n.content}", unsafe_allow_html=True)
-                count += 1
-    if count == 0:
-        st.info(f"No articles found for tag '{tag_key}'.")
 import streamlit as st
 from src.ingest import ingest_newsletters_from_feed
 from src.visualization import compute_and_assign_embeddings_tsne, tsne_visualization
 from src.llm_tagging import filter_newsletters_with_ai
+from src.grouping import render_similar_articles
+from src.web_search import find_full_text
 import pandas as pd
 import datetime
 import logging
@@ -170,11 +153,52 @@ if st.session_state['show_articles']:
                 n.user_selected = False
 
 
+# --- Similar Articles Sidebar Section ---
+st.sidebar.header("Find Similar Articles as selected article")
+selected_articles = [n for n in newsletters if n.user_selected]
+deselected_articles = [n for n in newsletters if not n.user_selected and n.filters['date_filter'] is True]
+sim_threshold = st.sidebar.slider("Cosine similarity threshold", min_value=0.0, max_value=1.0, value=0.7, step=0.01, key="similarity_threshold")
+
+if st.sidebar.button("Show Similar Articles"):
+    similar_articles = {}
+    for n in selected_articles:
+        results = render_similar_articles(n, deselected_articles, threshold=sim_threshold)
+        # update the dict if similarity > existing similarity
+        for art, sim in results.values():
+            if art.title not in similar_articles or sim > similar_articles[art.title][1]:
+                similar_articles[art.title] = (art,sim)
+    st.session_state['similar_articles'] = similar_articles
+    
+        
+if 'similar_articles' in st.session_state:
+    st.header("Similar Articles to Selected Articles")
+    for art, sim in st.session_state['similar_articles'].values():
+        with st.container():
+            col1, col2 = st.columns([0.05, 0.95])
+            with col1:
+                checked = st.checkbox("", key=f"select_similar_{art.title}", value=art.user_selected)
+            with col2:
+                st.markdown(f"### <a href='{art.url}' target='_blank'>{art.title}</a> (Similarity: {sim:.2f})", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:1em'>{art.content}</div>", unsafe_allow_html=True)
+            if checked:
+                art.user_selected = True
+            else:
+                art.user_selected = False
+
+# --- get full text for selected articles if not already present ---
+def fetch_all_full_text(newsletters):
+    for n in newsletters:
+        if n.user_selected and not n.full_text:
+            try:
+                n.full_text = find_full_text(n.url, n.title)
+            except Exception as e:
+                logging.error(f"Error fetching full text for {n.url}: {e}")
 # --- Export Selected Articles as CSV ---
 st.sidebar.header("Export")
 
 
 def export_as_csv(newsletters):
+    fetch_all_full_text(newsletters)
     export_list = [n for n in newsletters if n.user_selected]
     if not export_list:
         st.sidebar.warning("No articles selected for export.")
@@ -187,10 +211,34 @@ def export_as_csv(newsletters):
             'url': n.url,
             'embedding': n.embedding,
             'tsne': n.tsne,
-            'filters': n.filters
+            'filters': n.filters,
+            'date': n.publication_date.strftime('%Y-%m-%d %H:%M'),
+            'full_text': n.full_text
         } for n in export_list
     ])
     csv = df.to_csv(index=False)
     st.sidebar.download_button("Download CSV", csv, file_name="selected_newsletters.csv", mime="text/csv")
 if st.sidebar.button("Export Selected as CSV"):
     export_as_csv(newsletters)
+
+# --- Export Selected Articles as Markdown ---
+def export_as_markdown(newsletters):
+    fetch_all_full_text(newsletters)
+    export_list = [n for n in newsletters if n.user_selected]
+    if not export_list:
+        st.sidebar.warning("No articles selected for export.")
+        return
+    md = []
+    for n in export_list:
+        title_line = f"### [{n.title}]({n.url})" if n.url else f"### {n.title}"
+        date_line = f"**Date:** {n.publication_date.strftime('%Y-%m-%d %H:%M')}"
+        content_line = n.content
+        md.append(f"{title_line}\n{date_line}\n\n{content_line}\n\n---\n")
+        # add full text if available
+        if n.full_text:
+            md.append(f"**Full Text:**\n\n{n.full_text}\n\n---\n")
+    markdown_str = "\n".join(md)
+    st.sidebar.download_button("Download Markdown", markdown_str, file_name="selected_newsletters.md", mime="text/markdown")
+
+if st.sidebar.button("Export Selected as Markdown"):
+    export_as_markdown(newsletters)
