@@ -56,3 +56,17 @@ For an HTML report:
 coverage html
 # Open htmlcov/index.html in your browser
 ```
+
+# Integration test with streamlit
+```
+pytest tests/test_app_integration.py
+```
+
+# Starting a uv project
+[reference](https://docs.astral.sh/uv/guides/projects/)
+```
+uv init
+uv add -r requirements.txt
+uv pip install -e .
+uv run ...
+```
