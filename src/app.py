@@ -24,10 +24,20 @@ feed_path = st.text_input("RSS/XML Feed Path", value="data/master_feed.xml")
 
 if "newsletters" not in st.session_state:
     newsletters = ingest_newsletters_from_feed(feed_path)
+    # show user how many newsletters were ingested in main area
+    st.success(f"Ingested {len(newsletters)} newsletters from feed.")
+    # show domain name counts across newsletter
+    domain_counts = pd.Series(
+        [n.domain if n.domain else "unknown" for n in newsletters]
+    ).value_counts()
+    st.success(f"Domain counts:\n{domain_counts.to_dict()}")
     compute_and_assign_embeddings_tsne(newsletters, perplexity=3)
-    st.session_state["newsletters"] = newsletters[
-        :30
-    ]  # Limit to first 30 for performance
+    # show available date range
+    dates = [n.publication_date for n in newsletters]
+    min_date = min(dates).strftime("%Y-%m-%d")
+    max_date = max(dates).strftime("%Y-%m-%d")
+    st.info(f"Available date range: {min_date} to {max_date}")
+    st.session_state["newsletters"] = newsletters
 else:
     newsletters = st.session_state["newsletters"]
 
@@ -47,6 +57,11 @@ def apply_date_filter(newsletters, start_date, end_date):
 
 
 apply_date_filter(newsletters, start_date, end_date)
+# show how many newsletters match the date filter
+date_filtered_count = sum(
+    1 for n in newsletters if n.filters and n.filters.get("date_filter") is True
+)
+st.sidebar.info(f"{date_filtered_count} newsletters match the date filter.")
 
 # --- Keyword Filter ---
 st.sidebar.header("Keyword Filter")
@@ -66,30 +81,50 @@ if keyword:
     if st.sidebar.button(f"Apply Keyword Filter: '{keyword}'"):
         newsletters = apply_keyword_filter(newsletters, keyword)
         st.session_state["newsletters"] = newsletters
-        st.sidebar.success(f"Keyword filter '{keyword}' applied to newsletters.")
+        # show how many newsletters match the keyword filter
+        keyword_filtered_count = sum(
+            1
+            for n in newsletters
+            if n.filters
+            and n.filters.get(f"{keyword}")
+            and n.filters[f"{keyword}"].get("match") is True
+        )
+        st.sidebar.info(
+            f"{keyword_filtered_count} newsletters match the keyword filter."
+        )
 
 # --- AI Filter ---
 st.sidebar.header("AI Filtering")
 ai_provider = st.sidebar.selectbox(
     "Choose AI Provider",
-    ["OpenAI", "Claude", "Google", "Ollama (local)"],
-    index=2,  # Default to 'Google'
+    # ["OpenAI", "Claude", "Google", "Ollama (local)"],
+    ["Google", "Ollama (works local only)"],
+    index=0,  # Default to 'Google'
 )
-openai_api_key = (
-    st.sidebar.text_input("OpenAI API Key", type="password")
-    if ai_provider == "OpenAI"
-    else None
-)
-claude_api_key = (
-    st.sidebar.text_input("Claude API Key", type="password")
-    if ai_provider == "Claude"
-    else None
-)
-gemini_api_key = (
-    st.sidebar.text_input("Gemini API Key", type="password")
-    if ai_provider == "Google"
-    else None
-)
+# openai_api_key = (
+#     st.sidebar.text_input("OpenAI API Key", type="password")
+#     if ai_provider == "OpenAI"
+#     else None
+# )
+# claude_api_key = (
+#     st.sidebar.text_input("Claude API Key", type="password")
+#     if ai_provider == "Claude"
+#     else None
+# )
+
+# if st.secrets not available, show this
+# use st.secret for gemini key if available
+if "GEMINI_API_KEY" in st.secrets:
+    gemini_api_key = st.secrets["GEMINI_API_KEY"]
+    # tell user we're using the secret
+    st.sidebar.info("Using Gemini API Key from secrets.")
+else:
+    gemini_api_key = (
+        st.sidebar.text_input("Gemini API Key", type="password")
+        if ai_provider == "Google"
+        else None
+    )
+
 ollama_url = (
     st.sidebar.text_input("Ollama URL", value="http://localhost:11434/api/generate")
     if ai_provider == "Ollama (local)"
@@ -104,6 +139,7 @@ ai_filter_key = st.sidebar.text_input(
     help="Name for this AI filter (e.g. 'AI_filter', 'topic_filter', etc.)",
 )
 if user_prompt and ai_filter_key and st.sidebar.button("Apply AI Filter"):
+    # message on this is running
     filter_newsletters_with_ai(
         newsletters,
         user_prompt,
@@ -113,7 +149,15 @@ if user_prompt and ai_filter_key and st.sidebar.button("Apply AI Filter"):
         filter_key=ai_filter_key,
     )
     st.session_state["newsletters"] = newsletters
-    st.sidebar.success(f"AI filter '{ai_filter_key}' applied to newsletters.")
+    # show how many newsletters match the AI filter
+    ai_filtered_count = sum(
+        1
+        for n in newsletters
+        if n.filters
+        and n.filters.get(ai_filter_key)
+        and n.filters[ai_filter_key].get("match") is True
+    )
+    st.sidebar.info(f"{ai_filtered_count} newsletters match the AI filter.")
 
 # --- Filter Selection for Display ---
 st.sidebar.header("Filter Selection")

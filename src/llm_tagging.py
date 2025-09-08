@@ -162,9 +162,25 @@ def filter_newsletters_with_ai(
     """
     Runs AI filtering on a list of newsletters, updates each newsletter's filters dict with the result under filter_key, and returns the filtered list.
     """
-    progress_bar = st.progress(0, text="Filtering newsletters with AI...")
-    total = len(newsletters)
-    for idx, n in enumerate(newsletters[:30]):
+    progress_bar = st.progress(
+        0,
+        text="Filtering newsletters with AI within date range. Please be patient, limited by API rate limits.",
+    )
+
+    # only process newsletters that pass the date filter if pass_date is True
+    to_process = [
+        n
+        for n in newsletters
+        if not pass_date or (n.filters and n.filters.get("date_filter") is True)
+    ]
+    total = len(to_process)
+    # estimate 2 seconds per request for rate limiting, so show progress accordingly
+    estimated_time = total * 2  # seconds
+    # tell the user estimated time
+    st.info(
+        f"Estimated time for AI filtering: {estimated_time} seconds for {total} newsletters."
+    )
+    for idx, n in enumerate(to_process):
         n.filters = n.filters or {}
 
         if pass_date and n.filters and n.filters.get("date_filter") is True:

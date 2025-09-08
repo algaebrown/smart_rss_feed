@@ -16,3 +16,4 @@ class Newsletter:
     )
     full_text: Optional[str] = None  # For storing full text if content is a summary
     user_selected: bool = False
+    domain: Optional[str] = None  # e.g. 'tech', 'health', etc.
