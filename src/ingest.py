@@ -59,25 +59,31 @@ def ingest_newsletters_from_feed(feed_path: str) -> List[Newsletter]:
         raw_title = entry.get("title", "")
         title = clean_title(raw_title)
         content = entry.get("summary", "")  # 'summary' or 'description'
-        date_str = entry.get("published", "")
+        publication_date = parser.parse(entry.get("published", ""))
         url = entry.get("link", "")
+        # parse domain name from url if possible
+        domain = re.findall(r"https?://([^/]+)/?", url)
         # Try to get date from the web page if possible
-        web_date = get_publication_date_from_url(url) if url else None
-        try:
-            publication_date = (
-                parser.parse(web_date)
-                if web_date
-                else (parser.parse(date_str) if date_str else datetime.now())
-            )
-        except Exception as e:
-            logging.warning(f"Failed to parse date for entry '{title}': {e}")
-            publication_date = datetime.now()
+        # web_date = get_publication_date_from_url(url) if url else None
+        # try:
+        #     publication_date = (
+        #         parser.parse(web_date)
+        #         if web_date
+        #         else (parser.parse(date_str) if date_str else datetime.now())
+        #     )
+        # except Exception as e:
+        #     logging.warning(f"Failed to parse date for entry '{title}': {e}")
+        #     publication_date = datetime.now()
         newsletters.append(
             Newsletter(
-                title=title, content=content, publication_date=publication_date, url=url
+                title=title,
+                content=content,
+                publication_date=publication_date,
+                url=url,
+                domain=domain[0] if domain else None,
             )
         )
-        logging.info(f"Added newsletter: {title} | {publication_date} | {url}")
+        logging.info(f"Added newsletter: {title} | {publication_date}")
     logging.info(f"Total newsletters ingested: {len(newsletters)}")
     return newsletters
 
