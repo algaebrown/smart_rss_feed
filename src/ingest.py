@@ -7,6 +7,7 @@ import logging
 import re
 import requests
 from bs4 import BeautifulSoup
+import streamlit as st
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -54,6 +55,8 @@ def ingest_newsletters_from_feed(feed_path: str) -> List[Newsletter]:
     logging.info(f"Feed title: {feed.feed.get('title', 'N/A')}")
     logging.info(f"Feed link: {feed.feed.get('link', 'N/A')}")
     newsletters = []
+    # make progress bar
+    progress_bar = st.progress(0, text="Ingesting newsletters...")
     for i, entry in enumerate(feed.entries):
         logging.info(f"Processing entry {i+1}/{len(feed.entries)}")
         raw_title = entry.get("title", "")
@@ -62,7 +65,9 @@ def ingest_newsletters_from_feed(feed_path: str) -> List[Newsletter]:
         publication_date = parser.parse(entry.get("published", ""))
         url = entry.get("link", "")
         # parse domain name from url if possible
-        domain = re.findall(r"https?://([^/]+)/?", url)
+        from urllib.parse import urlparse
+
+        domain = [urlparse(url).netloc] if url else None
         # Try to get date from the web page if possible
         # web_date = get_publication_date_from_url(url) if url else None
         # try:
