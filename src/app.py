@@ -144,7 +144,8 @@ if user_prompt and ai_filter_key and st.sidebar.button("Apply AI Filter"):
         newsletters,
         user_prompt,
         ai_provider,
-        {"openai": openai_api_key, "claude": claude_api_key, "gemini": gemini_api_key},
+        # {"openai": openai_api_key, "claude": claude_api_key, "gemini": gemini_api_key},
+        {"gemini": gemini_api_key},
         ollama_url=ollama_url,
         filter_key=ai_filter_key,
     )
